@@ -42,17 +42,6 @@ To install the ESP-IDF tools:
 1. When the installer prompts for a version, select version ESP-IDF v5.0.x (x can be any)
 1. When the installer prompts for the components to install, select only the stuff of ESP32 (not ESP32-C variants etc, those variants are likely to cause the installation to fail and are not need, so avoid them if you can)
 
----
- title: include file
- description: include file
- author: timlt
- ms.service: iot-develop
- ms.topic: include
- ms.date: 10/14/2022
- ms.author: timlt
- ms.custom: include file
----
-
 ## Create the cloud components
 
 ### Create the IoT Central application
