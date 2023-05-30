@@ -93,7 +93,7 @@ To start the ESP-IDF PowerShell and clone the repo:
     ```
 
 To launch the ESP-IDF configuration settings:
-1. In **ESP-IDF PowerShell**, navigate to the *iot-middleware-freertos-samples* directory that you cloned previously.
+1. In **ESP-IDF PowerShell**, navigate to the *smart-tile-unipi-aziokit* directory that you cloned previously.
 1. Navigate to the ESP32-Azure IoT Kit project directory *demos\projects\ESPRESSIF\unipi-smart-tile*.
 1. Run the following command to launch the configuration menu:
 
