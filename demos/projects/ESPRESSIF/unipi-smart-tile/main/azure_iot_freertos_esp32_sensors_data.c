@@ -194,6 +194,16 @@ uint32_t ulSampleCreateTelemetry( uint8_t * pucTelemetryData,
     if( ( xLastTelemetrySendTime == INDEFINITE_TIME ) || ( xNow == INDEFINITE_TIME ) ||
         ( difftime( xNow, xLastTelemetrySendTime ) > lTelemetryFrequencySecs ) )
     {
+        int32_t steps;
+        float accel_peak;
+        int32_t step_duration_ms;
+        float step_energy;
+
+        /* Fetch data and check if there is a new event to be sent */
+        if(steps_counter_get_data(&steps, &accel_peak, &step_duration_ms, &step_energy) != 1)
+            return 0;
+
+        /* Start building the response JSON */
         AzureIoTResult_t xAzIoTResult;
         AzureIoTJSONWriter_t xWriter;
 
@@ -205,21 +215,19 @@ uint32_t ulSampleCreateTelemetry( uint8_t * pucTelemetryData,
         configASSERT( xAzIoTResult == eAzureIoTSuccess );
 
         /* Write steps count */
-        int32_t steps = steps_counter_get_steps();
         configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
 
         /* Write step duration ms */
-        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEP_DURATION_MS, lengthof( telemetry_STEP_DURATION_MS ), step_duration_ms ) == eAzureIoTSuccess );
 
         /* Write acceleration peak */
-        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithDoubleValue( &xWriter, ( uint8_t * ) telemetry_STEP_ACCEL_PEAK, lengthof( telemetry_STEP_ACCEL_PEAK ), accel_peak, 3) == eAzureIoTSuccess );
 
         /* Write Harvested energy */
-        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithDoubleValue( &xWriter, ( uint8_t * ) telemetry_HARVESTED_ENERGY, lengthof( telemetry_HARVESTED_ENERGY ), step_energy, 3) == eAzureIoTSuccess );
 
         /* Event time */
-        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
-
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_EVENT_TIME, lengthof( telemetry_EVENT_TIME ), (int32_t ) time( NULL ) ) == eAzureIoTSuccess );
 
         /* Complete Json Content */
         xAzIoTResult = AzureIoTJSONWriter_AppendEndObject( &xWriter );
