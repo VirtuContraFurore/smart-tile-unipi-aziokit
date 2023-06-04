@@ -358,7 +358,7 @@ static void prvAzureDemoTask( void * pvParameters )
                                            &pulIothubHostnameLength, &pucIotHubDeviceId,
                                            &pulIothubDeviceIdLength ) ) != 0 )
         {
-            LogError( ( "Failed on sample_dps_entry!: error code = 0x%08x\r\n", ulStatus ) );
+            LogError( ( "Failed on sample_dps_entry!: error code = 0x%08lu\r\n", ulStatus ) );
             return;
         }
     #endif /* democonfigENABLE_DPS_SAMPLE */
