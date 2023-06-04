@@ -53,22 +53,11 @@ static const char * TAG = "sample_azureiotkit";
 /**
  * @brief Telemetry Values
  */
-#define sampleazureiotTELEMETRY_TEMPERATURE                       ( "temperature" )
-#define sampleazureiotTELEMETRY_HUMIDITY                          ( "humidity" )
-#define sampleazureiotTELEMETRY_LIGHT                             ( "light" )
-#define sampleazureiotTELEMETRY_PRESSURE                          ( "pressure" )
-#define sampleazureiotTELEMETRY_ALTITUDE                          ( "altitude" )
-#define sampleazureiotTELEMETRY_MAGNETOMETERX                     ( "magnetometerX" )
-#define sampleazureiotTELEMETRY_MAGNETOMETERY                     ( "magnetometerY" )
-#define sampleazureiotTELEMETRY_MAGNETOMETERZ                     ( "magnetometerZ" )
-#define sampleazureiotTELEMETRY_PITCH                             ( "pitch" )
-#define sampleazureiotTELEMETRY_ROLL                              ( "roll" )
-#define sampleazureiotTELEMETRY_ACCELEROMETERX                    ( "accelerometerX" )
-#define sampleazureiotTELEMETRY_ACCELEROMETERY                    ( "accelerometerY" )
-#define sampleazureiotTELEMETRY_ACCELEROMETERZ                    ( "accelerometerZ" )
-
-#define telemetry_STEPS     ( "step_count" )
-#define telemetry_TIME_MS   ( "polltime_ms" )
+#define telemetry_STEPS                 ( "step_count" )
+#define telemetry_STEP_DURATION_MS      ( "StepDuration_ms" )
+#define telemetry_STEP_ACCEL_PEAK       ( "StepAccelerationPeak" )
+#define telemetry_HARVESTED_ENERGY      ( "HarvestedEnergy" )
+#define telemetry_EVENT_TIME            ( "EventTimeUnixTime" )
 
 static time_t xLastTelemetrySendTime = INDEFINITE_TIME;
 
@@ -85,7 +74,7 @@ static const char sampleazureiotCOMMAND_RESET_STEPS_COUNTER[] = "ResetStepsCount
 #define sampleazureiotPROPERTY_STATUS_SUCCESS         200
 #define sampleazureiotPROPERTY_SUCCESS                "success"
 #define sampleazureiotPROPERTY_TELEMETRY_FREQUENCY    ( "telemetryFrequencySecs" )
-#define sampleazureiotkitDEFAULT_TELEMETRY_FREQUENCY  20 
+#define sampleazureiotkitDEFAULT_TELEMETRY_FREQUENCY  20
 
 static int lTelemetryFrequencySecs = sampleazureiotkitDEFAULT_TELEMETRY_FREQUENCY;
 /*-----------------------------------------------------------*/
@@ -215,9 +204,22 @@ uint32_t ulSampleCreateTelemetry( uint8_t * pucTelemetryData,
         xAzIoTResult = AzureIoTJSONWriter_AppendBeginObject( &xWriter );
         configASSERT( xAzIoTResult == eAzureIoTSuccess );
 
-        /* Obtain steps count and append it to data */
+        /* Write steps count */
         int32_t steps = steps_counter_get_steps();
         configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+
+        /* Write step duration ms */
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+
+        /* Write acceleration peak */
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+
+        /* Write Harvested energy */
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+
+        /* Event time */
+        configASSERT( AzureIoTJSONWriter_AppendPropertyWithInt32Value( &xWriter, ( uint8_t * ) telemetry_STEPS, lengthof( telemetry_STEPS ), steps ) == eAzureIoTSuccess );
+
 
         /* Complete Json Content */
         xAzIoTResult = AzureIoTJSONWriter_AppendEndObject( &xWriter );
