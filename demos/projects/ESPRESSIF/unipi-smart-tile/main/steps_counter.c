@@ -154,6 +154,18 @@ int32_t steps_counter_get_steps(){
     return val;
 }
 
+int steps_counter_get_data(int32_t *steps, float *accel_peak, int32_t *step_duration_ms, float *step_energy){
+    if (xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE){
+        *steps = steps_counter;
+        *accel_peak = 1.0f;
+        *step_duration_ms = 500;
+        *step_energy = 0.5f;
+        xSemaphoreGive(semaphore);
+        return 1;
+    }
+    return 0;
+}
+
 void steps_counter_reset_steps(){
     if (xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE){
         steps_counter = 0;

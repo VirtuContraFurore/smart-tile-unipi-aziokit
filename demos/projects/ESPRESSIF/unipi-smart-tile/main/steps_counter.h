@@ -26,4 +26,11 @@ int32_t steps_counter_get_steps();
  **/
 void steps_counter_reset_steps();
 
+/**
+ * Get data from algorithm. Returns 1 if there is new data or 0 if data is old (i.e.
+ * steps value has not increased from last function invocation)
+ * NOTE: this function MAY BLOCK waiting for a mutex periodically locked by an ISR
+ **/
+int steps_counter_get_data(int32_t *steps, float *accel_peak, int32_t *step_duration_ms, float *step_energy);
+
 #endif /* STEPS_COUNTER_H_INCLUDED */
