@@ -327,7 +327,7 @@ uint32_t ulCreateTelemetry( uint8_t * pucTelemetryData,
 {
     *ulTelemetryDataLength = ulSampleCreateTelemetry( pucTelemetryData, ulTelemetryDataSize );
 
-    return 0;
+    return 0;     // Returns zero if there could be data to send (also *ulTelemetryDataLength must be > 0)
 }
 /*-----------------------------------------------------------*/
 
