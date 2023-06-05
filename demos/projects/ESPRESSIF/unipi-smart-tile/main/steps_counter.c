@@ -11,6 +11,7 @@
 #include "driver/i2c.h"
 
 #define ABS(x)  ( ((x) > 0) ? (x) : -(x) )
+#define CLAMP_HIGH(x, max)   ( ( (x) < (max) ) ? (x) : (max) )
 
 /* Algorithm constants: */
 #define ALPHA                          0.90f
@@ -42,6 +43,12 @@
 #define MPU6050_ACCEL_CONFIG_8G_VALUE       (2 << 3)
 #define MPU6050_ACCEL_CONFIG_16G_VALUE      (3 << 3)
 
+#define MPU6050_ACCEL_MSB_2G           (9.81f/16384)
+#define MPU6050_ACCEL_MSB_4G           (9.81f/8192)
+#define MPU6050_ACCEL_MSB_8G           (9.81f/4096)
+#define MPU6050_ACCEL_MSB_16G          (9.81f/2048)
+
+
 typedef uint32_t time_ms_t;
 
 void steps_counter_task(void * unused_ptr);
@@ -57,9 +64,15 @@ static volatile int32_t steps_counter;
 static int32_t steps_counter_tmp;
 static time_ms_t algo_time_ms;
 static time_ms_t counter;
+static time_ms_t step_start_time;
 static float average;
 static int32_t calibration_ticks;
 static uint32_t peaks_cnt = 0;
+static float accel_peak;
+static volatile float accel_peak_exp;
+static int32_t step_duration_ms;
+static volatile int32_t step_duration_ms_exp;
+static volatile int fresh_data = 0;
 
 static esp_err_t mpu6050_register_read(uint8_t reg_addr, uint8_t *data, size_t len){
     return i2c_master_write_read_device(I2C_MASTER_NUM, MPU6050_SENSOR_ADDR, &reg_addr, 1, data, len, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
@@ -99,6 +112,11 @@ esp_err_t steps_counter_init(){
     algo_time_ms = 0;
     counter = 0;
     average = 0;
+    accel_peak = 0;
+    accel_peak_exp = 0;
+    step_start_time = 0;
+    step_duration_ms_exp = 0;
+    fresh_data = 0;
     calibration_ticks = CALIBRATION_TICKS;
 
     accel_init();
@@ -157,11 +175,17 @@ int32_t steps_counter_get_steps(){
 int steps_counter_get_data(int32_t *steps, float *accel_peak, int32_t *step_duration_ms, float *step_energy){
     if (xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE){
         *steps = steps_counter;
-        *accel_peak = 1.0f;
-        *step_duration_ms = 500;
-        *step_energy = 0.5f;
-        xSemaphoreGive(semaphore);
-        return 1;
+        *accel_peak = accel_peak_exp;
+        *step_duration_ms = step_duration_ms_exp;
+        if(fresh_data) {
+            *step_energy = 0.5f + accel_peak_exp/1000.0f;
+            fresh_data = 0;
+            xSemaphoreGive(semaphore);
+            return 1;
+        } else {
+            xSemaphoreGive(semaphore);
+            return 0;
+        }
     }
     return 0;
 }
@@ -213,9 +237,17 @@ void steps_counter_algorithm_run(){
         return;
     }
 
+    float a = ABS(data-average) * MPU6050_ACCEL_MSB_4G;
+    if( ABS(accel_peak) < a )
+        accel_peak = a;
+
     if( ABS(data-average) > PEAK_DETECT_THSLD ){
         if( current_time > counter ){
             counter = current_time + PEAK_DETECT_DISABLE_MS;
+
+            if(peaks_cnt == 0)
+                step_start_time = current_time;
+
             if( ++peaks_cnt >= PEAKS_MAX ) {
                 peaks_cnt = 0;
                 steps_counter_tmp++;
@@ -237,6 +269,11 @@ void steps_counter_task(void * unused_ptr){
             if( xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE ) {
                 steps_counter += steps_counter_tmp;
                 steps_counter_tmp = 0;
+                accel_peak_exp = accel_peak;
+                accel_peak = 0;
+                step_duration_ms_exp = CLAMP_HIGH((int32_t)(get_time_ms()-step_start_time), 2000);
+                step_duration_ms = 0;
+                fresh_data = 1;
                 xSemaphoreGive(semaphore);
             }
         }
