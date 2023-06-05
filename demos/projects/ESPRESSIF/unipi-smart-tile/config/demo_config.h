@@ -43,7 +43,7 @@
  *        This plug-and-play model can be found at:
  *        https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/azureiot/devkit/freertos/esp32azureiotkit-1.json
  */
-#define sampleazureiotMODEL_ID    "dtmi:azureiot:devkit:freertos:Esp32AzureIotKit;1"
+#define sampleazureiotMODEL_ID    "dtmi:projectIotUnipi:SmartTile_61t;1"
 
 
 /**
